@@ -1,0 +1,2 @@
+name,face_recognition_dst,openface_OEN_dst,openface_IEBL_dst,dlib_trained_model,sift_feature,is_different_gender,pca_eigenface_dst,target
+face_cropping/demo/crop_img_2,0.4934709602924527,0.5863797664642334,0.5173990726470947,0.5294811756596332,10,0,9906712.375527238,1
