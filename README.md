@@ -1,5 +1,5 @@
 # Face_Recognition
-Face Recognition by scraping from various method.\
+Face Recognition by scraping from various method.
 
 Credits to:
 - https://pypi.org/project/face-recognition/
