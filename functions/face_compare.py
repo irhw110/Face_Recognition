@@ -26,36 +26,43 @@ def crop_face(image):
     gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
     face_detector = dlib.get_frontal_face_detector()
     detected_faces = face_detector(image, 1)
+    if(len(detected_faces)==0):
+        return None
     return(largest_face(detected_faces))
 
 def face_compare_process(img_file_1, img_file_2, threshold):
     start = time.time()
-    # Load image 1 and image 2 file
-    img_1 = cv2.imdecode(np.frombuffer(img_file_1, np.uint8), cv2.COLOR_BGR2RGB)
-    img_2 = cv2.imdecode(np.frombuffer(img_file_2, np.uint8), cv2.COLOR_BGR2RGB)
-    
-    # Crop face from both image
-    dets_1 = crop_face(img_1)
-    dets_2 = crop_face(img_2)
-
-    shape = sp_68(img_1, dets_1)
-    face_descriptor_1 = facerec.compute_face_descriptor(img_1, shape)
-    if(len(face_descriptor_1)==0):
-        shape = sp_5(img_1, dets)
-        face_descriptor_1 = facerec.compute_face_descriptor(img_1, shape)
-
-    shape = sp_68(img_2, dets_2)
-    face_descriptor_2 = facerec.compute_face_descriptor(img_2, shape)
-    if(len(face_descriptor_2)==0):
-        shape = sp_5(img_2, dets)
-        face_descriptor_2 = facerec.compute_face_descriptor(img_2, shape)
+    try:
+        # Load image 1 and image 2 file
+        img_1 = cv2.imdecode(np.frombuffer(img_file_1, np.uint8), cv2.COLOR_BGR2RGB)
+        img_2 = cv2.imdecode(np.frombuffer(img_file_2, np.uint8), cv2.COLOR_BGR2RGB)
         
-    # Measure the distance
-    dst = distance.euclidean(face_descriptor_1, face_descriptor_2)
-    res = 0 if(dst<threshold) else 1
-    duration = time.time() - start
+        # Crop face from both image
+        dets_1 = crop_face(img_1)
+        dets_2 = crop_face(img_2)
 
-    return dst,res,duration
+        shape = sp_68(img_1, dets_1)
+        face_descriptor_1 = facerec.compute_face_descriptor(img_1, shape)
+        if(len(face_descriptor_1)==0):
+            shape = sp_5(img_1, dets)
+            face_descriptor_1 = facerec.compute_face_descriptor(img_1, shape)
+
+        shape = sp_68(img_2, dets_2)
+        face_descriptor_2 = facerec.compute_face_descriptor(img_2, shape)
+        if(len(face_descriptor_2)==0):
+            shape = sp_5(img_2, dets)
+            face_descriptor_2 = facerec.compute_face_descriptor(img_2, shape)
+            
+        # Measure the distance
+        dst = distance.euclidean(face_descriptor_1, face_descriptor_2)
+        res = 0 if(dst<threshold) else 1
+        duration = time.time() - start
+
+        return dst,res,duration
+
+    except Exception as e:
+        duration = time.time() - start
+        return None,None,duration
 
 start_load = time.time()
 sp_5 = dlib.shape_predictor('model/shape_predictor_5_face_landmarks.dat')

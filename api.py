@@ -40,4 +40,4 @@ def face_compare():
             duration = duration,
         )
 
-app.run()
+app.run(host='0.0.0.0')
