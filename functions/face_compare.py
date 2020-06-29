@@ -1,7 +1,6 @@
 import cv2
 import dlib
 import numpy as np # upgrade to 1.8.0
-import time
 
 from scipy.spatial import distance
 
@@ -31,7 +30,7 @@ def crop_face(image):
     return(largest_face(detected_faces))
 
 def face_compare_process(img_file_1, img_file_2, threshold):
-    start = time.time()
+    
     try:
         # Load image 1 and image 2 file
         img_1 = cv2.imdecode(np.frombuffer(img_file_1, np.uint8), cv2.COLOR_BGR2RGB)
@@ -40,6 +39,9 @@ def face_compare_process(img_file_1, img_file_2, threshold):
         # Crop face from both image
         dets_1 = crop_face(img_1)
         dets_2 = crop_face(img_2)
+
+        if(dets_1 is None or dets_2 is None):
+            raise Exception("Face not found")
 
         shape = sp_68(img_1, dets_1)
         face_descriptor_1 = facerec.compute_face_descriptor(img_1, shape)
@@ -56,16 +58,13 @@ def face_compare_process(img_file_1, img_file_2, threshold):
         # Measure the distance
         dst = distance.euclidean(face_descriptor_1, face_descriptor_2)
         res = 0 if(dst<threshold) else 1
-        duration = time.time() - start
 
-        return dst,res,duration
+        return dst,res,"Operation successful"
 
     except Exception as e:
-        duration = time.time() - start
-        return None,None,duration
+        return None,None,e.args
 
-start_load = time.time()
 sp_5 = dlib.shape_predictor('model/shape_predictor_5_face_landmarks.dat')
 sp_68 = dlib.shape_predictor('model/shape_predictor_68_face_landmarks.dat')
 facerec = dlib.face_recognition_model_v1('model/dlib_face_recognition_resnet_model_v1.dat')
-print("Load model took "+str(time.time() - start_load))
+print("Load Models")
