@@ -1,25 +1,12 @@
 import cv2
 import dlib
 import numpy as np # upgrade to 1.8.0
-
 from scipy.spatial import distance
 
 '''
-Get the largest detected face from a list of detected faces
-    input : list of rectangles
-    return: rectangle [(left,top),(right,bottom)]
-'''
-def largest_face(detected_faces):
-    max = 0
-    for i,face_rect in enumerate(detected_faces):
-        if((face_rect.width()+face_rect.height()) > (detected_faces[max].width()+detected_faces[max].height())):
-            max = i
-    return detected_faces[max]
-
-'''
-Get list of detected faces from an image
+Get largest detected faces from an image
     input : image (png,jpg,jfif,jpeg)
-    return: list of rectangle
+    return: rectangle
 '''
 def crop_face(image):
     gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
@@ -27,10 +14,42 @@ def crop_face(image):
     detected_faces = face_detector(image, 1)
     if(len(detected_faces)==0):
         return None
-    return(largest_face(detected_faces))
+    else:
+        max = 0
+        for i,face_rect in enumerate(detected_faces):
+            if((face_rect.width()+face_rect.height()) > (detected_faces[max].width()+detected_faces[max].height())):
+                max = i
+        return detected_faces[max]
 
-def face_compare_process(img_file_1, img_file_2, threshold):
+'''
+Check if a input threshold can be converted to float and is greater than 0
+    input : string
+    return: threshold: float, valid: boolean
+'''
+def validate_threshold(threshold_string):
+    valid = False
+    try :  
+        threshold = float(threshold_string) 
+        if(threshold > 0):
+            valid = True
+    except : 
+        threshold = None
+
+    return threshold, valid
     
+
+'''
+Compare the face from 2 different picture
+    input  : 
+    - img_1     : first image to compare
+    - img_2     : second image to compare
+    - threshold : threshold for classification
+    return : 
+    - dst       : distance of image compare result using euclidean
+    - res       : result of image comparation, True if same person, False if different person
+    - message   : information about process result
+'''
+def face_compare_process(img_file_1, img_file_2, threshold):
     try:
         # Load image 1 and image 2 file
         img_1 = cv2.imdecode(np.frombuffer(img_file_1, np.uint8), cv2.COLOR_BGR2RGB)
@@ -57,7 +76,7 @@ def face_compare_process(img_file_1, img_file_2, threshold):
             
         # Measure the distance
         dst = distance.euclidean(face_descriptor_1, face_descriptor_2)
-        res = 0 if(dst<threshold) else 1
+        res = dst < threshold
 
         return dst,res,"Operation successful"
 
